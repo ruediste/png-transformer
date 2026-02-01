@@ -14,7 +14,7 @@ const PNG_SIGNATURE = new Uint8Array([
 ]);
 
 export async function transformPng(
-  inputData: Blob | ArrayBuffer,
+  inputData: Blob | ArrayBufferLike,
   onChunk: (args: OnChunkArgs) => Promise<void> | undefined,
 ) {
   const input = new DataView(

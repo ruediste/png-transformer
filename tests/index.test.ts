@@ -12,7 +12,7 @@ test("read data", async () => {
   // read test.png from file system
   const data = await readFile("./tests/test.png");
   const texts: { [key: string]: string } = {};
-  await transformPng(new Blob([data]), async (args) => {
+  await transformPng(data.buffer, async (args) => {
     console.log(args.chunk.type, args.chunk.data.byteLength);
 
     const header = await parseHeader(args.chunk);
@@ -34,7 +34,7 @@ test("blobEntry roundtrip", async () => {
     "This is some sample blob data.",
   ).buffer;
   const data = await readFile("./tests/test.png");
-  const pngWithBlob = await transformPng(data, async (args) => {
+  const pngWithBlob = await transformPng(data.buffer, async (args) => {
     args.passThrough();
     if (args.chunk.type === "IHDR") {
       args.addChunk(toBlobChunk("sampleBlob", sampleBlobData));
