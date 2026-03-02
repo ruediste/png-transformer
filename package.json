@@ -1,7 +1,7 @@
 {
   "name": "@ruediste/png-transformer",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A library for transforming PNG images",
   "author": "Ruedi Steinmann <ruediste@gmail.com>",
   "license": "MIT",

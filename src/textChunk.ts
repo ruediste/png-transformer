@@ -1,3 +1,4 @@
+import { base64ToBuffer, bufferToBase64 } from "./base64";
 import { compress } from "./compress";
 import { decompress } from "./decompress";
 import type { Chunk } from "./types";
@@ -93,7 +94,7 @@ export async function toTextChunkBase64(
 ): Promise<Chunk> {
   const encoder = new TextEncoder();
   const keyData = encoder.encode(key);
-  const textData = encoder.encode(Buffer.from(data).toString("base64"));
+  const textData = encoder.encode(bufferToBase64(data));
   const compressedTextData = await compress(textData);
   const combinedData = new Uint8Array(
     keyData.byteLength + 1 + 1 + compressedTextData.byteLength,
@@ -114,7 +115,7 @@ export async function parseTextChunkBase64(
 ): Promise<{ key: string; data: ArrayBuffer } | undefined> {
   const textEntry = await parseTextChunk(chunk);
   if (textEntry?.key === key) {
-    const buffer = Buffer.from(textEntry.text, "base64");
+    const buffer = base64ToBuffer(textEntry.text);
     return { key, data: new Uint8Array(buffer).buffer };
   }
   return undefined;
