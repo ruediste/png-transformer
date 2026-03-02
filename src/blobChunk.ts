@@ -2,10 +2,10 @@ import type { Chunk } from "./types";
 
 export type BlobEntry = {
   key: string;
-  data: ArrayBuffer;
+  data: ArrayBufferLike;
 };
 
-export function toBlobChunk(key: string, data: ArrayBuffer): Chunk {
+export function toBlobChunk(key: string, data: ArrayBufferLike): Chunk {
   // null -terminated UTF-8 key + binary data
   const encoder = new TextEncoder();
   const keyData = encoder.encode(key);
@@ -19,7 +19,7 @@ export function toBlobChunk(key: string, data: ArrayBuffer): Chunk {
   };
 }
 
-export function parseBlobEntry(chunk: Chunk): BlobEntry | undefined {
+export function parseBlobChunk(chunk: Chunk): BlobEntry | undefined {
   if (chunk.type !== "blob") {
     return undefined;
   }

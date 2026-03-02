@@ -1,10 +1,12 @@
 import { readFile } from "fs/promises";
 import { expect, test } from "vitest";
 import {
-  parseBlobEntry,
+  parseBlobChunk,
   parseHeader,
   parseTextChunk,
+  parseTextChunkBase64,
   toBlobChunk,
+  toTextChunkBase64,
   transformPng,
 } from "../src";
 
@@ -41,9 +43,9 @@ test("blobEntry roundtrip", async () => {
     }
   });
 
-  let foundBlobData: ArrayBuffer | undefined = undefined;
+  let foundBlobData: ArrayBufferLike | undefined = undefined;
   await transformPng(pngWithBlob, async (args) => {
-    const blobEntry = parseBlobEntry(args.chunk);
+    const blobEntry = parseBlobChunk(args.chunk);
     if (blobEntry?.key === "sampleBlob") {
       foundBlobData = blobEntry.data;
     }
@@ -52,4 +54,31 @@ test("blobEntry roundtrip", async () => {
   expect(new Uint8Array(foundBlobData!)).toEqual(
     new Uint8Array(sampleBlobData),
   );
+});
+
+test("base64 text chunk roundtrip", async () => {
+  const sampleData = new TextEncoder().encode(
+    "This is some sample data for base64 encoding.",
+  ).buffer;
+  const data = await readFile("./tests/test.png");
+  const pngWithTextChunk = await transformPng(data.buffer, async (args) => {
+    args.passThrough();
+    if (args.chunk.type === "IHDR") {
+      const textChunk = await toTextChunkBase64("sampleKey", sampleData);
+      args.addChunk(textChunk);
+    }
+  });
+
+  let foundData: ArrayBuffer | undefined = undefined;
+  await transformPng(pngWithTextChunk, async (args) => {
+    const textEntry = await parseTextChunkBase64(args.chunk, "sampleKey");
+    if (textEntry?.key === "sampleKey") {
+      foundData = textEntry.data;
+    }
+  });
+  expect(foundData).toBeDefined();
+  expect(new Uint8Array(foundData!).length).toEqual(
+    new Uint8Array(sampleData).length,
+  );
+  expect(new Uint8Array(foundData!)).toEqual(new Uint8Array(sampleData));
 });
